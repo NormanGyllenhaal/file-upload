@@ -13,10 +13,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * 上传工具类
@@ -54,6 +53,14 @@ public class FileUpload {
     private static  final String HTTPS = "https";
 
 
+    private static final String IMAGE_HEADER = "FFD8FF,89504E47,47494638,49492A00,424D";
+
+
+    private static  final String IMAGE_TYPE = ".jpg,.gif,.png,.bmp,.jpeg";
+
+
+    private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
     /**
      * save file and return image url
      * @param file
@@ -63,7 +70,7 @@ public class FileUpload {
      * @throws IOException
      */
 
-    public String handleImg(MultipartFile file, HttpServletRequest request) throws FileTypeException, IOException {
+    public String saveFile(MultipartFile file, HttpServletRequest request) throws FileTypeException, IOException {
         checkFileType(file);
         String fileName = getFileName(file);
         String datePath = getDatePath();
@@ -78,6 +85,60 @@ public class FileUpload {
     }
 
 
+    public List<String> saveFile(MultipartFile[] file, HttpServletRequest request) throws FileTypeException,
+            IOException {
+        List<String> strings = new ArrayList<String>();
+        for(int i = 0;i<file.length;i++){
+            String s = saveFile(file[i], request);
+            strings.add(s);
+        }
+        return strings;
+    }
+
+    public String saveCompressImage(MultipartFile file, HttpServletRequest request,
+                                    Integer width,Integer height) throws
+            FileTypeException,
+            IOException {
+        fileHeader = IMAGE_HEADER;
+        fileType = IMAGE_TYPE;
+        String url = saveFile(file, request);
+        String compressPic = CompressPic.thumbnailsCompressPic(filePath, url, width, height);
+        return  compressPic;
+    }
+
+
+
+    public String saveImage(MultipartFile file, HttpServletRequest request) throws
+            FileTypeException,
+            IOException {
+        fileHeader = IMAGE_HEADER;
+        fileType = IMAGE_TYPE;
+        String url = saveFile(file, request);
+        return  url;
+    }
+
+
+
+    public void asyncSaveFile(final MultipartFile file, final HttpServletRequest request){
+        executorService.execute(new Runnable() {
+            public void run() {
+                try {
+                    saveFile(file,request);
+                } catch (FileTypeException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+
+    public void asyncSaveFile(final MultipartFile[] files, final HttpServletRequest request){
+        for(int i = 0;i<files.length;i++){
+            asyncSaveFile(files[i], request);
+        }
+    }
     /**
      * let filePrefix concat date
      * @return
@@ -237,6 +298,10 @@ public class FileUpload {
                 throw new FileTypeException(header + "file header is forbid");
             }
         }
+    }
+
+    private void checkFileType(MultipartFile[] file) throws IOException, FileTypeException {
+
     }
 
 
