@@ -1,5 +1,7 @@
 ### java springmvc 上传插件 file upload
 
+[![Build Status](https://travis-ci.org/NormanGyllenhaal/file-upload.svg?branch=master)](https://travis-ci.org/NormanGyllenhaal/file-upload)
+
 - 插件功能  
    单个或多个文件上传  
    同步异步文件处理  
