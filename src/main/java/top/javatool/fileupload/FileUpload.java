@@ -25,7 +25,6 @@ import java.util.concurrent.Executors;
 public class FileUpload {
 
 
-
     private String filePath;
 
 
@@ -43,26 +42,38 @@ public class FileUpload {
 
     private String host;
 
+    public FileUpload() {
+    }
 
-    private static  final String HTTP = "http";
+    public FileUpload(String filePath, String filePrefix, String fileType, String fileHeader, String ip, String host) {
+        this.filePath = filePath;
+        this.filePrefix = filePrefix;
+        this.fileType = fileType;
+        this.fileHeader = fileHeader;
+        this.ip = ip;
+        this.host = host;
+    }
 
-    private static  final int HTTP_PORT = 80;
+    private static final String HTTP = "http";
 
-    private static  final int HTTPS_PORT = 443;
+    private static final int HTTP_PORT = 80;
 
-    private static  final String HTTPS = "https";
+    private static final int HTTPS_PORT = 443;
+
+    private static final String HTTPS = "https";
 
 
     private static final String IMAGE_HEADER = "FFD8FF,89504E47,47494638,49492A00,424D";
 
 
-    private static  final String IMAGE_TYPE = ".jpg,.gif,.png,.bmp,.jpeg";
+    private static final String IMAGE_TYPE = ".jpg,.gif,.png,.bmp,.jpeg";
 
 
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
 
     /**
      * save file and return image url
+     *
      * @param file
      * @param request
      * @return
@@ -80,7 +91,7 @@ public class FileUpload {
         }
         String pathConcatFile = datePath.concat(fileName);
         saveFile(filePath.concat(pathConcatFile), file);
-        String urlPath = getUrlPath(request,pathConcatFile);
+        String urlPath = getUrlPath(request, pathConcatFile);
         return urlPath;
     }
 
@@ -88,24 +99,12 @@ public class FileUpload {
     public List<String> saveFile(MultipartFile[] file, HttpServletRequest request) throws FileTypeException,
             IOException {
         List<String> strings = new ArrayList<String>();
-        for(int i = 0;i<file.length;i++){
+        for (int i = 0; i < file.length; i++) {
             String s = saveFile(file[i], request);
             strings.add(s);
         }
         return strings;
     }
-
-    public String saveCompressImage(MultipartFile file, HttpServletRequest request,
-                                    Integer width,Integer height) throws
-            FileTypeException,
-            IOException {
-        fileHeader = IMAGE_HEADER;
-        fileType = IMAGE_TYPE;
-        String url = saveFile(file, request);
-        String compressPic = CompressPic.thumbnailsCompressPic(filePath, url, width, height);
-        return  compressPic;
-    }
-
 
 
     public String saveImage(MultipartFile file, HttpServletRequest request) throws
@@ -114,16 +113,15 @@ public class FileUpload {
         fileHeader = IMAGE_HEADER;
         fileType = IMAGE_TYPE;
         String url = saveFile(file, request);
-        return  url;
+        return url;
     }
 
 
-
-    public void asyncSaveFile(final MultipartFile file, final HttpServletRequest request){
+    public void asyncSaveFile(final MultipartFile file, final HttpServletRequest request) {
         executorService.execute(new Runnable() {
             public void run() {
                 try {
-                    saveFile(file,request);
+                    saveFile(file, request);
                 } catch (FileTypeException e) {
                     e.printStackTrace();
                 } catch (IOException e) {
@@ -134,19 +132,29 @@ public class FileUpload {
     }
 
 
-    public void asyncSaveFile(final MultipartFile[] files, final HttpServletRequest request){
-        for(int i = 0;i<files.length;i++){
+    public void asyncSaveFile(final MultipartFile[] files, final HttpServletRequest request) {
+        for (int i = 0; i < files.length; i++) {
             asyncSaveFile(files[i], request);
         }
     }
+
+
+    public void deleteImage(String imageUrl) {
+        int i = imageUrl.lastIndexOf("/");
+        StringBuilder sb = new StringBuilder().append(filePath).append(filePrefix).append(imageUrl.substring(imageUrl.lastIndexOf("/", i - 1)).replaceFirst("/", ""));
+        File file = new File(sb.toString());
+        file.delete();
+    }
+
     /**
      * let filePrefix concat date
+     *
      * @return
      */
-    private String getDatePath(){
+    private String getDatePath() {
         String date = DateFormatUtils.format(new Date(), "yyyy-MM-dd");
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(filePrefix).append(date).append(File.separator);
+        stringBuilder.append(filePrefix).append(date).append("/");
         return stringBuilder.toString();
     }
 
@@ -184,27 +192,26 @@ public class FileUpload {
      *
      * @return
      */
-    private String getUrlPath( HttpServletRequest request,String  pathConcatFile) throws
+    private String getUrlPath(HttpServletRequest request, String pathConcatFile) throws
             UnknownHostException {
         StringBuilder sb = new StringBuilder();
-        sb.append(request.getScheme()).append(getHost(request)).append(getPort(request)).append(pathConcatFile);
+        sb.append(request.getScheme()).append("://").append(getHost(request)).append(getPort(request)).append("/").append(pathConcatFile);
         return sb.toString();
     }
 
 
     /**
-     *
      * @param request
      * @return
      * @throws UnknownHostException
      */
     private String getHost(HttpServletRequest request) throws UnknownHostException {
-        if(StringUtils.isNotEmpty(ip)){
+        if (StringUtils.isNotEmpty(ip)) {
             InetAddress address = InetAddress.getByName(ip);
             String host = address.getHostName();
             return host;
         }
-        if(StringUtils.isNotEmpty(host)){
+        if (StringUtils.isNotEmpty(host)) {
             return host;
         }
         return request.getServerName();
@@ -212,26 +219,24 @@ public class FileUpload {
 
 
     /**
-     *
      * @param request
      * @return
      */
-    private String getPort(HttpServletRequest request){
+    private String getPort(HttpServletRequest request) {
         int serverPort = request.getServerPort();
         String scheme = request.getScheme();
-        if(scheme.equals(HTTP)){
-            if(serverPort==HTTP_PORT){
+        if (scheme.equals(HTTP)) {
+            if (serverPort == HTTP_PORT) {
                 return StringUtils.EMPTY;
             }
         }
-        if(scheme.equals(HTTPS)){
-            if(serverPort==HTTPS_PORT){
+        if (scheme.equals(HTTPS)) {
+            if (serverPort == HTTPS_PORT) {
                 return StringUtils.EMPTY;
             }
         }
         return String.valueOf(serverPort);
     }
-
 
 
     /**
@@ -280,29 +285,33 @@ public class FileUpload {
      * 判断上传的文件是否合法
      * （一）、第一：检查文件的扩展名，
      * (二）、 第二：检查文件的MIME类型 。
-     *
      */
     private void checkFileType(MultipartFile file) throws IOException, FileTypeException {
         String fileName = file.getOriginalFilename();
         String extensionName = fileName.substring(fileName.lastIndexOf(".") + 1).toLowerCase();
-        if(StringUtils.isNoneEmpty(fileType)){
-            Set<String> fileTypeSet = new HashSet<String>(Arrays.asList(fileType.split(",")));
-            if(!fileTypeSet.contains(extensionName)){
+        if (StringUtils.isNotEmpty(fileType)) {
+            Set<String> fileTypeSet = new HashSet<>(Arrays.asList(fileType.split(",")));
+            if (!fileTypeSet.contains(extensionName)) {
                 throw new FileTypeException(extensionName + " extension name is forbid");
             }
         }
-        if(StringUtils.isNoneEmpty(fileHeader)){
-            Set<String> fileHeaderSet = new HashSet<String>(Arrays.asList(fileHeader.split(",")));
+        if (StringUtils.isNotEmpty(fileHeader)) {
+            Set<String> fileHeaderSet = new HashSet<>(Arrays.asList(fileHeader.split(",")));
             String header = getFileHeader(file.getInputStream());
-            if(!fileHeaderSet.contains(header)){
-                throw new FileTypeException(header + "file header is forbid");
+            if (!checkHeader(fileHeaderSet, header)) {
+                throw new FileTypeException(header + " file header is forbid");
             }
         }
     }
 
-    private void checkFileType(MultipartFile[] file) throws IOException, FileTypeException {
 
+    private Boolean checkHeader(Set<String> fileHeaderSet, String header) {
+        for (String fileHeader : fileHeaderSet) {
+            if (header.contains(fileHeader)) {
+                return true;
+            }
+        }
+        return false;
     }
-
 
 }
