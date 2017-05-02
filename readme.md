@@ -1,7 +1,7 @@
 ### java springmvc 上传插件 file upload
 
 [![Build Status](https://travis-ci.org/NormanGyllenhaal/file-upload.svg?branch=master)](https://travis-ci.org/NormanGyllenhaal/file-upload)
-  maven 依赖
+- maven 依赖
 ```xml
 <dependency>
        <groupId>top.javatool.fileuplod</groupId>
@@ -18,7 +18,7 @@
    保存文件到指定目录，并返回文件的url  
    支持图片压缩  
  
-使用
+- 使用
 ```xml
 <bean id="fileupload" class="top.javatool.fileupload.FileUpload"/>
 ```
