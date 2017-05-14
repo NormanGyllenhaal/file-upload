@@ -40,9 +40,9 @@ private FileUpload fileUpload;
 
   
 @org.springframework.web.bind.annotation.RequestMapping(value = "upload")
-public void testUpload(MultipartFile headImg,HttpServletRequest request){
+public void testUpload(MultipartFile file,HttpServletRequest request){
     //保存文件到指定路径并返回图片url
-    String imageUrl = fileUpload.saveFile(file,requet);
+    String imageUrl = fileUpload.saveFile(file,request);
     //http://www.test.com/test/yyyy-MM-dd/随机数字（时间戳+6位随机数).文件后缀
 }
 ```
