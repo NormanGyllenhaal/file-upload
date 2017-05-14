@@ -66,10 +66,11 @@ public class FileUpload {
     private static final String IMAGE_HEADER = "FFD8FF,89504E47,47494638,49492A00,424D";
 
 
-    private static final String IMAGE_TYPE = ".jpg,.gif,.png,.bmp,.jpeg";
+    private static final String IMAGE_TYPE = "jpg,gif,png,bmp,jpeg";
 
 
     private ExecutorService executorService = Executors.newFixedThreadPool(10);
+
 
     /**
      * save file and return image url
@@ -98,7 +99,7 @@ public class FileUpload {
 
     public List<String> saveFile(MultipartFile[] file, HttpServletRequest request) throws FileTypeException,
             IOException {
-        List<String> strings = new ArrayList<String>();
+        List<String> strings = new ArrayList<>();
         for (int i = 0; i < file.length; i++) {
             String s = saveFile(file[i], request);
             strings.add(s);
@@ -139,9 +140,17 @@ public class FileUpload {
     }
 
 
+    public void deleteImage(List<String> imageUrls) {
+        for (String image : imageUrls) {
+            deleteImage(image);
+        }
+    }
+
+
     public void deleteImage(String imageUrl) {
         int i = imageUrl.lastIndexOf("/");
-        StringBuilder sb = new StringBuilder().append(filePath).append(filePrefix).append(imageUrl.substring(imageUrl.lastIndexOf("/", i - 1)).replaceFirst("/", ""));
+        StringBuilder sb;
+        sb = new StringBuilder().append(filePath).append(filePrefix).append(imageUrl.substring(imageUrl.lastIndexOf("/", i - 1)).replaceFirst("/", ""));
         File file = new File(sb.toString());
         file.delete();
     }
