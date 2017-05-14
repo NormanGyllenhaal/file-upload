@@ -11,7 +11,7 @@
    支持图片压缩  
  
 - 在spring mvc 中使用
-1. 首先加入maven依赖 ，已加入maven中央仓库
+1. 首先加入maven依赖 ，已加入maven中央仓库 http://search.maven.org/#search%7Cga%7C1%7Cg%3A%22top.javatool.fileuplod%22
 
 - maven 依赖
 ```xml
@@ -24,9 +24,9 @@
 2. bean 注入
 ```xml
 <bean id="fileupload" class="top.javatool.fileupload.FileUpload"
-p:filePath="/data/www" 
-p:filePrefix="test／" 
-p:fileType=".jpg,.gif,.png,.bmp,.jpeg" 
+p:filePath="/data/www/" 
+p:filePrefix="test/" 
+p:fileType="jpg,gif,png,bmp,jpeg" 
 p:fileHeader="FFD8FF,89504E47,47494638,49492A00,424D"
 p:host="www.test.com"
 p:ip=""
